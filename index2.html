@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+
+    <script>
+        const URL = "http://127.0.0.1:5000";
+      
+
+                const requestOptions = {
+        method: 'POST', // Use POST method for sending data
+        headers: {
+            'Content-Type': 'application/json', // Set Content-Type header to JSON
+        },
+        body: JSON.stringify({"username": "John Terry"}), // JSON data in the request body
+        };
+        
+        fetch(URL + "/login", requestOptions)
+          .then(response => {
+            // Check if the response status is okay (status 200)
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+      
+            // Parse the JSON response
+            return response.json();
+          })
+          .then(data => {
+            // Handle the parsed JSON data here
+            console.log("Data received:", data["transaction_history"]);
+          })
+          .catch(error => {
+            // Handle any errors that occur during the fetch
+            console.error("Fetch error:", error);
+          });
+      </script>
+      
+</body>
+</html>

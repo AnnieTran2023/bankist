@@ -40,7 +40,7 @@ SET default_table_access_method = heap;
 -- Name: accounts; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.accounts (
+CREATE TABLE accounts (
     account_id integer NOT NULL,
     owner character varying(255) NOT NULL,
     balance numeric(10,2) NOT NULL,
@@ -77,7 +77,7 @@ ALTER SEQUENCE public.accounts_account_id_seq OWNED BY public.accounts.account_i
 -- Name: transactions; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.transactions (
+CREATE TABLE transactions (
     transaction_id integer NOT NULL,
     account_id integer,
     amount numeric(10,2) NOT NULL,

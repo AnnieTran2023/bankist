@@ -86,9 +86,9 @@ const displayMovements = function (movements) {
 };
 
 //Calculate and Display balance
-const calcDisplayBalance = function(movements){
-  const balance = movements.reduce((acc,mov)=> acc+mov,0);
-  labelBalance.innerHTML = `${balance}$`;
+const calcDisplayBalance = function(acc){
+  acc.balance = acc.movements.reduce((acc,mov)=> acc+mov,0);
+  labelBalance.innerHTML = `${acc.balance}$`;
 };
 
 //Display Summary (Deposit, Withdraw, Interest)
@@ -106,6 +106,15 @@ const calcDisplaySummary = function (acc){
   labelSumInterest.textContent = `${interest}€`;
   console.log(interest)
 };
+
+const updateUI = function (acc){
+     //Display movements
+  displayMovements(acc.movements);
+  //Display balance
+  calcDisplayBalance(acc);
+   //Display summary
+  calcDisplaySummary(acc);
+}
 
 let currentAccount;
 //Event handler with log in button 
@@ -126,12 +135,7 @@ btnLogin.addEventListener('click', function (e) {
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
-    //Display movements
-    displayMovements(currentAccount.movements);
-    //Display balance
-    calcDisplayBalance(currentAccount.movements);
-     //Display summary
-    calcDisplaySummary(currentAccount);
+    updateUI(currentAccount);
     }
 });
 
@@ -139,12 +143,28 @@ btnTransfer.addEventListener('click',function(e){
   e.preventDefault();
   const amount = Number(inputTransferAmount.value);
   const receiverAccount = accounts.find(acc => acc.userName === inputTransferTo.value);
-  console.log(receiverAccount, amount);
+  //Clear input fields
+  inputTransferAmount.value = inputTransferTo.value = ' ';
+  //Check condition of transfer
+  if(amount > 0 && receiverAccount && currentAccount.balance >= amount && receiverAccount?.userName !== currentAccount.userName){
+    console.log('Transfer valid!')
+  }
+  //Add negative movement to current user and positive movement to recipient
   currentAccount.movements.push(-amount);
-  //Current account display movement, balance, summary
-  displayMovements(currentAccount.movements);
-  calcDisplayBalance(currentAccount.movements);
-  calcDisplaySummary(currentAccount); 
-  //Display receiver account
- 
+  receiverAccount.movements.push(amount);
+  updateUI(currentAccount);
 });
+
+//Close account
+btnClose.addEventListener('click',function(e){
+  e.preventDefault();
+  if(currentAccount.userName === inputCloseUsername.value && currentAccount.pin === Number(inputClosePin.value)){
+    const index = accounts.findIndex(acc => acc.userName === currentAccount.userName);
+    console.log(index);
+  // delete account from array
+    accounts.splice(index,1);
+  //hide UI
+    containerApp.style.opacity = 0;
+    inputCloseUsername.value = inputClosePin.value = ' ';
+  }
+})
