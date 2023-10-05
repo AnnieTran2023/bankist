@@ -154,6 +154,18 @@ btnTransfer.addEventListener('click',function(e){
   receiverAccount.movements.push(amount);
   updateUI(currentAccount);
 });
+//Loan function
+btnLoan.addEventListener('click',function(e){
+  e.preventDefault();
+  const amount = Number(inputLoanAmount.value);
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)){
+    //add movement
+    currentAccount.movements.push(amount);
+    //update UI
+    updateUI(currentAccount);
+    inputLoanAmount.value = '';
+  }
+})
 
 //Close account
 btnClose.addEventListener('click',function(e){
@@ -168,3 +180,4 @@ btnClose.addEventListener('click',function(e){
     inputCloseUsername.value = inputClosePin.value = ' ';
   }
 })
+
