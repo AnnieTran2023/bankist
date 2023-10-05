@@ -72,9 +72,10 @@ createUsernames(accounts);
 console.log(accounts);
 
 //Display movements
-const displayMovements = function (movements) {
+const displayMovements = function (movements, sort = false) {
   containerMovements.innerHTML = '';
-  movements.forEach(function(mov,i){
+  const movs = sort ? [...movements].sort((a,b)=> a-b) : movements;
+  movs.forEach(function(mov,i){
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const html = `
   <div class="movements__row">
@@ -179,5 +180,25 @@ btnClose.addEventListener('click',function(e){
     containerApp.style.opacity = 0;
     inputCloseUsername.value = inputClosePin.value = ' ';
   }
+});
+
+let sorted = false;
+btnSort.addEventListener('click',function(e){
+  e.preventDefault();
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
 })
 
+
+const x = new Array(7);
+console.log(x);
+x.fill(7);
+console.log(x);
+
+const y = Array.from({length:7},()=>1);
+console.log(y);
+
+labelBalance.addEventListener('click',function(){
+  const movementsUI = Array.from(document.querySelectorAll('.movements__value'), el => Number(el.textContent.replace('€','')));
+  console.log(movementsUI);
+});
