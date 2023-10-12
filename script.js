@@ -103,6 +103,13 @@ const formatMovementDate = function(date){
   if(daysPassed <=7) return `${daysPassed} days ago`;
   return new Intl.DateTimeFormat('en-GB').format(date);
 }
+//format currency
+const formatCur = function (value,locale,currency){
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value);
+};
 
 //Display movements
 const displayMovements = function (acc, sort = false) {
@@ -112,11 +119,12 @@ const displayMovements = function (acc, sort = false) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const date = new Date(acc.movementsDates[i]); 
     const displayDate = formatMovementDate(date);
+    const formattedMov = formatCur(mov, acc.locale, acc.currency);
     const html = `
   <div class="movements__row">
     <div class="movements__type movements__type--${type}">${i+1} ${type}</div>
     <div class="movements__date">${displayDate}</div>
-    <div class="movements__value">${mov.toFixed(2)}€</div>
+    <div class="movements__value">${formattedMov}</div>
   </div>`;
   containerMovements.insertAdjacentHTML('afterbegin',html);
   });
@@ -125,22 +133,22 @@ const displayMovements = function (acc, sort = false) {
 //Calculate and Display balance
 const calcDisplayBalance = function(acc){
   acc.balance = acc.movements.reduce((acc,mov)=> acc+mov,0);
-  labelBalance.innerHTML = `${acc.balance.toFixed(2)}$`;
+  labelBalance.innerHTML = formatCur(acc.balance, acc.locale,acc.currency);
 };
 
 //Display Summary (Deposit, Withdraw, Interest)
 const calcDisplaySummary = function (acc){
   const incomes = acc.movements.filter(mov => mov>0)
   .reduce((acc,mov)=>acc+mov,0);
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`
+  labelSumIn.textContent = formatCur(incomes, acc.locale,acc.currency)
   const out = acc.movements.filter(mov => mov <0)
   .reduce((acc,mov) => acc+mov,0);
-  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`
+  labelSumOut.textContent = formatCur(out, acc.locale,acc.currency);
   const interest = acc.movements.filter(mov => mov>0)
   .map(deposit => deposit * acc.interestRate/100)
   .filter(int => int >= 1)
   .reduce((acc,interest) => acc + interest, 0);
-  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+  labelSumInterest.textContent = formatCur(interest, acc.locale,acc.currency);
   console.log(interest)
 };
 
@@ -152,8 +160,28 @@ const updateUI = function (acc){
    //Display summary
   calcDisplaySummary(acc);
 }
+const startLogOutTime = function(){
+  //Set time to 5 mins
+  let time = 300;
+  //Call the timer every second
+  const timer = setInterval(function(){
+  const min = String(Math.floor(time/60)).padStart(2,0);
+  const sec = String(time%60).padStart(2,0);
+  //In each call, print the remaining time to UI
+  labelTimer.textContent = `${min}:${sec}`;
+    //When 0 seconds, stop timer and log out user
+  if(time ===0) {
+    clearInterval(timer);
+    labelWelcome.textContent = 'Log in to get started';
+    containerApp.style.opacity = 0;
+  }
+    //decrease one second
+  time--;
+  },1000);
+  return timer;
+};
 
-let currentAccount;
+let currentAccount, timer;
 
 //Event handler with log in button 
 btnLogin.addEventListener('click', function (e) {
@@ -185,6 +213,9 @@ btnLogin.addEventListener('click', function (e) {
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+    //Timer
+    if (timer) clearInterval(timer);
+    timer = startLogOutTime();
     updateUI(currentAccount);
     }
 });
@@ -205,21 +236,29 @@ btnTransfer.addEventListener('click',function(e){
   receiverAccount.movements.push(amount);
   receiverAccount.movementsDates.push(new Date().toISOString());
   updateUI(currentAccount);
+  //reset timer
+  clearInterval(timer);
+  timer = startLogOutTime();
 });
 //Loan function
 btnLoan.addEventListener('click',function(e){
   e.preventDefault();
   const amount = Math.floor(inputLoanAmount.value);
-  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)){
-    //add movement
+  if (amount > 0 && currentAccount.movements
+    .some(mov => mov >= amount * 0.1)){
+      setTimeout(function(){
+            //add movement
     currentAccount.movements.push(amount);
     currentAccount.movementsDates.push(new Date().toISOString());
     //update UI
     updateUI(currentAccount);
+      },3500);
+    }
     inputLoanAmount.value = '';
-  }
-})
-
+    //reset timer
+    clearInterval(timer);
+    timer = startLogOutTime();
+  });
 //Close account
 btnClose.addEventListener('click',function(e){
   e.preventDefault();
@@ -251,3 +290,6 @@ console.log(bankDepositSum);
 
 const numDeposit1000 = accounts.flatMap(acc => acc.movements).reduce((count,cur) => cur >= 1000 ? count+1 : count,0);
 console.log(numDeposit1000);
+
+
+
